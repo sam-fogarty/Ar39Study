@@ -12,8 +12,7 @@ CPPFLAGS=-I $(BOOST_INC) \
 
 CXXFLAGS=$$(root-config --cflags --libs) -Wall -Werror -pedantic -Wno-unused-variable -Wno-unused-but-set-variable -I./inc/ 
 CXX=g++
-LDFLAGS=$$(root-config --cflags --libs) \
-        -L $(CANVAS_LIB) -l canvas \
+LDFLAGS=-L $(CANVAS_LIB) -l canvas \
         -L $(CANVAS_ROOT_IO_LIB) -l canvas_root_io \
         -L $(CETLIB_LIB) -l cetlib \
         -L $(CETLIB_EXCEPT_LIB) -l cetlib_except \
