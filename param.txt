@@ -1,0 +1,25 @@
+0 0 2 18 2.0 1 20 1 1 4 20 1000 100000 24 9 ProtoDUNE tpcrawdecoder:daq 1.0
+0|1|2|3 | 4 |5| 6|7|8|9|10| 11 |  12  |13|14|   15   |        16       | 17|
+
+ 0. Draw candidate map?
+ 1. Random selection? Use this if you want to sample noise.
+ 2. This is an outdated parameter and can be removed at some point.
+ 3. This is the Threshold in ADCs.
+ 4. This is a Standard Deviation threshold used to throw out dead channels.
+ 5. This is the horizontal (wires) integration window parameter.
+ 6. This is the vertical (time ticks) integration window parameter. 
+ 7. This is the buffer size (in wires) between the integration window and the check region.
+ 8. This is the buffer size (in time ticks) between the integ. window and the chack region.
+ 9. This is the width (in wires) of each side of the check region.
+10. This is the width (in time ticks) of the top and bottom of the check region.
+11. This is the max events.
+12. This is the max events per run.
+13. This is the track exclusion window parameter used to draw bubbles around tracks.
+14. This is the MCCx number. This is important because some data products change.
+15. This is the detector (0 == MicroBooNE; 1 == ProtoDUNE)
+16. This is the input data tag to select which product will be analyzed.
+17. This is a scale factor used to solve a rounding bug in some rawdigit products. 
+
+
+This parameter file is not the best way to do this. Eventually, I want to get everything 
+either hard-coded or input through FHICL if this gets reimplemented in LArSoft.
