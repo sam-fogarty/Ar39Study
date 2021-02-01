@@ -36,7 +36,6 @@ namespace rad_analysis{
                                                 int& cind,
                                                 const gallery::Event& ev);
 
-
   // Confirm candidates based on 3D info on multiple planes; needs improvement; MicroBooNE only
   void Confirm_Candidates(std::vector<short>& fcoor, rad_analysis::Waveforms& nfrw);
 

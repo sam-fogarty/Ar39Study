@@ -29,7 +29,6 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
 
   int i_max, i_md; // temp variables 
 
-
   m_i_counter = 0;
 
   // Expand our vectors to the size needed
@@ -42,9 +41,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
   track_channel = std::vector<bool>(detector_properties.CHN, 1); // all set to 1 for now (essentially allows track exclusion to look everywhere) -- this can be refined
   dead_channel = std::vector<bool>(detector_properties.CHN, 0);
 
-
   std::cout << "(1) reading geometry" << std::endl; // one of many debugging messages
-
 
   //fill geom std::vectors from uboone geometry input file
   if (detector_properties.DET != 1){ //Not for PDUNE-SP
@@ -64,31 +61,25 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
     collection_induction_intersection_file.close();
   }
 
-
   std::cout << "(2) read geometry successfully. Beginning baseline calculation." << std::endl;
 
-
-
-  if (!data_properties.recoused){ //if rawdigits
+  //if rawdigits, find baseline, maybe filter noise, and fill waveforms
+  if (!data_properties.recoused){ 
     std::cout << "rawdigits selected " << std::endl;
 
     for (size_t i_ar = 0, size_allrawdigits = ard_vec.size(); i_ar != size_allrawdigits; i_ar++) { //loop through wires
       bool kcheck = false;
       bool colw = false;
 
-
       int chan_num = ard_vec.at(i_ar).Channel(); //the channels given by allrawdigits_vec might not be in order, so check the assigned channel number
       int TPC_number = channel_to_wire[chan_num][0]; 
-
 
       float total=0, totsqr=0;   
       float mean, sd, f_sum_square=0;    
       float n=0;
 
-
       m_i_sd_counter = 0;
       i_max = 0;
-
 
       for (unsigned short t = 0; t < collection_channel.size(); t++){ // Is this a collection wire?
 	if (binary_search(collection_channel[t].begin(), collection_channel[t].end(), chan_num)) // This can be replaced by using channel_to_wire map
@@ -97,7 +88,6 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
 
       if (detector_properties.DET == 1 && !colw) //don't fill the induction channels for protodune yet
 	continue;
-
 
       m_mode_vector = std::vector<int>(8192, 0); // Normally ADCs are 12 bits, but some data products already calculate a baseline
                                                  // For consistency, baseline is re-calculated using this method,
@@ -122,7 +112,6 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
 
       mean = total/n;       // Used soon to find other statistical values
       baseline.at(chan_num) = i_md; // Baseline = Mode avg of waveform
-
 
       for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++) {
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
@@ -149,7 +138,6 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
       sd = sqrt(f_sum_square/(n-1));	// (sd)^2 = sum_i (x_i - mean(x)) / n  ***this n-1 here was an error! 
       sd_vector.at(chan_num) = sd;  // fill the vector of SD with the value sd
 
-
       //detect dead channels based on standard deviation of waveform
       if (sd < 0.3 || (detector_properties.DET == 0 && baseline.at(chan_num) > 550 && chan_num >= 4800)){// ||
 	  //	  (m_region_sd[chan_num][60] + m_region_sd[chan_num][61]) / 2 > 6.0){
@@ -163,12 +151,8 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
 	    dead_channel.at(chan_num + w) = 1;
 	  }
 	}
-
       }
-
     }
-
-
 
     std::cout << "baseline done" << std::endl;
 
@@ -180,7 +164,6 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
 	for (unsigned short wire_index = 0; wire_index < collection_channel[TPC_number].size(); wire_index += 16){
 	  for (int t = 0; t < detector_properties.NTT; t++){ // loop over the whole event
 	    m_median_vector.clear();
-
 
 	    // find median of the ADC value at this time tick for 16 channels ahead of present channel
 	    for (int i = 0; i < 16; i++){ 
@@ -200,15 +183,11 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev,
 	    for (int q = 0; q < 16; q++){
 	      adc_value[collection_channel[TPC_number][wire_index + q]][t] -= i_md;
 	    }
-
-
 	  }
 	}
       }
     }
   } // end if not reco
-
-
 
   else if (data_properties.recoused) {
     for (size_t i_ar = 0, size_allrawdigits = wire_vec.size(); i_ar != size_allrawdigits; i_ar++) {

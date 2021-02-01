@@ -25,11 +25,9 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
   std::cout << "Signal_Select called" << std::endl;
 
-
   // These are used for the asymmetric windowing; these values are hard-coded for now, but we'll want it to depend on the detector/data product
   const short c_center_range[2] = {-16, 12};     // signal center wire
   const short c_side_range[2] = {-14, 10};       // signal side wires
-
 
   std::vector<short> coord;  //coordinates to points over threshold
   std::vector<short> fcoor;  //coordinates to points over threshold
@@ -39,19 +37,15 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
   std::vector< std::vector<char> > track_exclusion_map (nfrw.detector_properties.CHN, std::vector<char>(nfrw.detector_properties.NTT,0));  //map of excluded area due to muon track
   //std::vector< std::vector<float> > adc_value (nfrw.detector_properties.CHN, std::vector<float>(nfrw.detector_properties.NTT, 0)); //actual std::vector of waveforms for event
 
-
   // Parameter variables from parameter file (Par is read and filled in main() )
   float f_parameter_threshold   = Par[3];  // threshold for radiological candidates
-
   bool  b_parameter_noise_study = Par[1];  // 0 is operating normally; 1 randomly selects points in the detector to sample noise
-
   int   i_parameter_x_window    = Par[5];  // horizontal width parameter for the actual integration window
   int   i_parameter_y_window    = Par[6];  // vertical width parameter for the integration window 
   int   i_parameter_x_buffer    = Par[7];  // buffer between integration window and track check boxes
   int   i_parameter_y_buffer    = Par[8]; 
   int   i_parameter_x_width     = Par[9];  // width of the track check boxes
   int   i_parameter_y_width     = Par[10];
-
 
   unsigned short j = 0;
   unsigned short k = 0;
@@ -72,12 +66,12 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       if (nfrw.detector_properties.DET != 1){
 	threshold_area[nfrw.induction_channel_1[a][0]][t] = -1;
 	threshold_area[nfrw.induction_channel_1[a][nfrw.induction_channel_1[a].size() - 1]][t] = -1;
-
 	threshold_area[nfrw.induction_channel_2[a][0]][t] = -1;
 	threshold_area[nfrw.induction_channel_2[a][nfrw.induction_channel_2[a].size() - 1]][t] = -1;
       }
     }
   }
+
   for (unsigned short a = 0; a < nfrw.collection_channel.size(); a++){
     for (unsigned short s = 0; s < nfrw.collection_channel[a].size(); s++){
       for (unsigned short t = 0; t < i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width; t++){
@@ -160,21 +154,19 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	  k++;
 	}
       }
+
       l++;
     }
   }
 
   std::cout << "Initial Coord: " << coord.size() << std::endl;
 
-
   if (Par[2] == 2){ 
 
     std::cout << "Track exclusion started: " << std::endl;
 
     int dim[4];
-
     bool check[4];
-
     bool ch;
     
     //track exclusion continued
@@ -201,12 +193,14 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	      dums = x;
 	      dumt = y;
 	    }
+
 	    else if (nfrw.adc_value.at(x).at(y) < tMax && nfrw.channel_to_wire[x][2] != 2 && !nfrw.data_properties.recoused){ //induction centering
 	      tMax = nfrw.adc_value.at(x).at(y);
 	      dums = x;
 	      dumt = y;
 	    }
-	    else if (nfrw.adc_value.at(x).at(y) > tMax && nfrw.channel_to_wire[x][2] != 2 && nfrw.data_properties.recoused){ //reco induction centering
+
+            else if (nfrw.adc_value.at(x).at(y) > tMax && nfrw.channel_to_wire[x][2] != 2 && nfrw.data_properties.recoused){ //reco induction centering
 	      tMax = nfrw.adc_value.at(x).at(y);
 	      dums = x;
 	      dumt = y;
@@ -225,7 +219,9 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
 	    if (i_coord + 2 < coord.size()){
 	      coord.erase(coord.begin() + i_coord, coord.begin() + i_coord + 2);
-	    }else{
+	    }
+
+            else{
 	      coord.erase(coord.begin() + i_coord, coord.begin() + i_coord + 1);
 	      coord.erase(coord.begin() + i_coord, coord.begin() + i_coord + 1);
 	    }
@@ -388,15 +384,15 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     for (size_t i_coord = 0; i_coord < ecoor.size(); i_coord += 2){
       std::vector<bool> normal_direc(2, false);
 
-
       short s = ecoor.at(i_coord);
       short t = ecoor.at(i_coord + 1);
       unsigned int test = 0;
 
-      
       if (track_exclusion_map[s][t + 1] == 0){
     	normal_direc[0] = true;
-      }else if (track_exclusion_map[s][t - 1] == 0){
+      }
+
+      else if (track_exclusion_map[s][t - 1] == 0){
     	normal_direc[1] = true;
       }
 
@@ -408,7 +404,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     	}
       }
 
-
       std::vector<bool>().swap(normal_direc); //clear memory used by normal
     }
 
@@ -416,15 +411,15 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     for (size_t i_coord = 0; i_coord < ecoor.size(); i_coord += 2){
       std::vector<bool> normal_direc(2, false);
 
-
       short s = ecoor.at(i_coord);
       short t = ecoor.at(i_coord + 1);
       unsigned int test = 0;
 
-
       if (track_exclusion_map[s + 1][t] == 0 && track_exclusion_map[s - 1][t] != 0){
       	normal_direc[0] = true;
-      }else if (track_exclusion_map[s - 1][t] == 0 && track_exclusion_map[s + 1][t] != 0){
+      }
+
+      else if (track_exclusion_map[s - 1][t] == 0 && track_exclusion_map[s + 1][t] != 0){
       	normal_direc[1] = true;
       } 
 
@@ -436,10 +431,8 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     	}
       }
 
-
       std::vector<bool>().swap(normal_direc); //clear memory used by normal
     }
-
 
     std::cout << "Track Exclusion finished. Starting candidate selection from coordinates. " << std::endl;
     std::cout << "Coordinates found: " << coord.size()/2 << std::endl;
@@ -470,7 +463,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	check[i] = true;
       }
 
-
       //center on max or minimum
       for (int x = s - i_parameter_x_window; x <= s + i_parameter_x_window; x++){
 	for (int y = t - i_parameter_y_window; y <= t + i_parameter_y_window; y++){
@@ -482,17 +474,18 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	      dums = x;
 	      dumt = y;
 	    }
+
 	    else if (nfrw.adc_value.at(x).at(y) < tMax && nfrw.channel_to_wire[x][2] != 2 && !nfrw.data_properties.recoused){ //induction centering
 	      tMax = nfrw.adc_value.at(x).at(y);
 	      dums = x;
 	      dumt = y;
 	    }
-	    else if (nfrw.adc_value.at(x).at(y) > tMax && nfrw.channel_to_wire[x][2] != 2 && nfrw.data_properties.recoused){ //reco induction centering
+
+            else if (nfrw.adc_value.at(x).at(y) > tMax && nfrw.channel_to_wire[x][2] != 2 && nfrw.data_properties.recoused){ //reco induction centering
 	      tMax = nfrw.adc_value.at(x).at(y);
 	      dums = x;
 	      dumt = y;
 	    }
-
 
 	    if (threshold_area.at(x).at(y) == 1){
 	      tOverThresh++;
@@ -631,12 +624,10 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	  }
 	}
 
-
 	//fill an std::vector of the final coordinates to real candidates
 	fcoor.push_back(s);
 	fcoor.push_back(t);
       
-
 	for (int x = s - i_parameter_x_window; x <= s + i_parameter_x_window; x++){
 	  for (int y = t - i_parameter_y_window; y <= t + i_parameter_y_window; y++){
 	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
@@ -654,9 +645,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	  }
 	}
 
-
 	nfrw.candidate_info.push_back(std::vector<double> (13, -1));
-
 	nfrw.candidate_info.back()[0] = tMax;
 	nfrw.candidate_info.back()[1] = wireWidth;
 	nfrw.candidate_info.back()[2] = tWidth;
@@ -698,7 +687,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
       bool stuck_bit = false;
       bool asymmetric;
-
 
       //Integrate Charge 
       //if (nfrw.channel_to_wire[s][2] == 2){ //Collection ONLY
@@ -851,13 +839,11 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       	continue;
       }
       
-
       ICharge.push_back(accumulate(IntWindow.begin(), IntWindow.end(), 0));
       //ICharge.push_back(charge);
       //std::cout << accumulate(IntWindow.begin(), IntWindow.end(), 0) << std::endl;
       c_info[8] = nfrw.candidate_info[i_coord / 2][8];
       
-
       TEinfo[1] = TEinfo[1] + 1.0;
 
       if (c_info[8] == 1)
