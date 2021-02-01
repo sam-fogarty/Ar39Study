@@ -39,7 +39,7 @@ for scripts used to run this tool on the grid to analyze many files in parallel.
 There is an experimental feature that uses MicroBooNE geometry to try to infer 3D position of point-like 
 signals using the induction wires as well as the collection wires. This requires the MicroBooNE 
 *ChannelWireGeometry_V2.txt* file with the top text ***removed***. It should only be a table of numbers. 
-Then the second required file, CollectionIntersection.txt can be generated with /scripts/MicroBooNE/GeomScript. 
+Then the second required file, plane_wire_intersections.txt can be generated with /scripts/MicroBooNE/GeomScript. 
 
 This feature is expressed in the Confirm_Candidates() function in *PointSignalFunctions.h*.
 
