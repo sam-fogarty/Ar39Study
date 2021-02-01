@@ -41,5 +41,5 @@ signals using the induction wires as well as the collection wires. This requires
 *ChannelWireGeometry_V2.txt* file with the top text ***removed***. It should only be a table of numbers. 
 Then the second required file, CollectionIntersection.txt can be generated with /scripts/MicroBoonE/GeomScript. 
 
-
+This feature is expressed in the Confirm_Candidates() function in *PointSignalFunctions.h*.
 
