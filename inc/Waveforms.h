@@ -83,12 +83,9 @@ namespace rad_analysis {
     //                                       [plane]
     void Fill_Wire_Maps(); 
   
-    void initialize_data (const gallery::Event& ev,
-                          const std::vector<raw::RawDigit>& ard_vec,
-                          const std::vector<recob::Wire>& wire_vec,
-                          const std::vector<recob::Wire>& wire_vec2,
-                          const bool& b_noise_filter,
-                          const std::vector<double>& Par);
+    void initialize_data (const gallery::Event& ev, const std::vector<raw::RawDigit>& ard_vec,
+                          const std::vector<recob::Wire>& wire_vec, const std::vector<recob::Wire>& wire_vec2,
+                          const bool& b_noise_filter, const std::vector<double>& Par);
 
   };
 }
