@@ -25,6 +25,10 @@ double bline(double x1, double y1, double x2, double y2, double x);
 
 namespace rad_analysis{
 
+  // function to draw a rectangle from bottom left to top right
+  void Draw_Rectangle(std::vector< std::vector<char> >& data,
+                      short wire1, short time1, short wire2, short time2);
+  
   // Select point-like signal and record their waveforms
   std::vector< std::vector<char> > Signal_Select(rad_analysis::Waveforms& nfrw,
                                                 std::vector<float>& ICharge,
