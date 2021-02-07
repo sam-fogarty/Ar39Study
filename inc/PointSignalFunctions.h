@@ -25,10 +25,26 @@ double bline(double x1, double y1, double x2, double y2, double x);
 
 namespace rad_analysis{
 
-  // function to draw a rectangle from bottom left to top right
-  void Draw_Rectangle(std::vector< std::vector<char> >& data,
-                      short wire1, short time1, short wire2, short time2);
+  // Struct of a rectangle of the threshold or track data
+  struct Subarea { 
+    short wire1; 
+    short wire2;
+    short time1;
+    short time2;
+
+    bool track_here = false;
+
+    Subarea(short w1, short t1, short w2, short t2);
+
+    // function to draw the subarea (a rectangle) from bottom left to top right
+    void Draw_Subarea(std::vector< std::vector<char> >& t_data, char val);
+
+    // functions to check whether the subarea has tracks or other candidates
+    bool Check_Track(const std::vector< std::vector<char> >& t_data);
+    bool Check(const std::vector< std::vector<char> >& t_data);
+  };
   
+
   // Select point-like signal and record their waveforms
   std::vector< std::vector<char> > Signal_Select(rad_analysis::Waveforms& nfrw,
                                                 std::vector<float>& ICharge,

@@ -12,6 +12,54 @@ double bline(double x1, double y1, double x2, double y2, double x){
   return ((m * x) + b);
 } 
 
+rad_analysis::Subarea::Subarea(short a, short b, short c, short d) // Subarea constructor
+  : wire1(a)                                                       // wire1 = a
+  , wire2(c)                                                       // time1 = b
+  , time1(b)                                                       // wire2 = c
+  , time2(d)                                                       // time2 = d
+{ }
+
+void rad_analysis::Subarea::Draw_Subarea(std::vector< std::vector<char> >& t_data, char val){
+  for (int s = wire1; s <= wire2; s++){
+    for (int t = time1; t <= time2; t++){
+      if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
+        t_data[s][t] = val;
+      }
+    }
+  }
+}
+
+bool rad_analysis::Subarea::Check_Track(const std::vector< std::vector<char> >& t_data){
+  for (int s = wire1; s <= wire2; s++){
+    for (int t = time1; t <= time2; t++){
+      if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
+
+        if (t_data[s][t] == 1) 
+          return true;
+
+      }
+    }
+  }
+
+  return false;
+}
+
+bool rad_analysis::Subarea::Check(const std::vector< std::vector<char> >& t_data){
+  for (int s = wire1; s <= wire2; s++){
+    for (int t = time1; t <= time2; t++){
+      if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
+
+        if (t_data[s][t] != 0)
+          return false;
+
+      }
+      
+      else return false;
+    }
+  }
+
+  return true;
+}
 
 std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Waveforms& nfrw,
                                                              std::vector<float>& ICharge,
@@ -236,72 +284,115 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
       if (nfrw.track_channel.at(s) == 1){  //only do this for wires with a muon track (also only collection plane)
 
+	//left box
+        rad_analysis::Subarea left_box(s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
+                                       t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+                                       s - (i_parameter_x_window + i_parameter_x_buffer),
+                                       t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+	
+	//top box
+        rad_analysis::Subarea top_box(s - (i_parameter_x_window + i_parameter_x_buffer),
+                                      t + (i_parameter_y_window + i_parameter_y_buffer),
+                                      s + (i_parameter_x_window + i_parameter_x_buffer),
+                                      t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+	
+	//bottom box
+        rad_analysis::Subarea bottom_box(s - (i_parameter_x_window + i_parameter_x_buffer),
+                                         t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+                                         s + (i_parameter_x_window + i_parameter_x_buffer),
+                                         t - (i_parameter_y_window + i_parameter_y_buffer) );
+	
+	//right box
+        rad_analysis::Subarea right_box(s + (i_parameter_x_window + i_parameter_x_buffer),
+                                        t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+                                        s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
+                                        t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+
+
 	//left region to check around candidate
-	for (int x = s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); 
-             x <= s - (i_parameter_x_window + i_parameter_x_buffer); x++){
-	  for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); 
-               y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){ 
+        check[0] = left_box.Check_Track(threshold_area);
+        if (check[0])
+          ch = true;
+
+	// for (int x = s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); 
+        //      x <= s - (i_parameter_x_window + i_parameter_x_buffer); x++){
+	//   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); 
+        //        y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){ 
 	                                                                                           
-    	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-    	      //threshold_area.at(x).at(y) = -1;                                                            
-    	      if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
-    		check[0] = true;
-    		threshold_area.at(x).at(y) = 1;
-    		ch = 1;
-    	      }
-    	      //threshold_area.at(x).at(y) = -1;
-    	    }
-    	  }
-    	}
+    	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+    	//       //threshold_area.at(x).at(y) = -1;                                                            
+    	//       if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
+    	// 	check[0] = true;
+    	// 	threshold_area.at(x).at(y) = 1;
+    	// 	ch = 1;
+    	//       }
+    	//       //threshold_area.at(x).at(y) = -1;
+    	//     }
+    	//   }
+    	// }
 	
 	//top region to check around candidate
-	for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
-	  for (int y = t + (i_parameter_y_window + i_parameter_y_buffer); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+        check[1] = top_box.Check_Track(threshold_area);
+        if (check[1])
+          ch = true;
+
+	// for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
+	//   for (int y = t + (i_parameter_y_window + i_parameter_y_buffer); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
 	
-    	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-    	      //threshold_area.at(x).at(y) = -1;                                                            
-    	      if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
-    		check[1] = true;
-    		threshold_area.at(x).at(y) = 1;
-    		ch = 1;
-    	      }
-    	      //threshold_area.at(x).at(y) = -1;
-    	    }
-    	  }
-    	}
+    	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+    	//       //threshold_area.at(x).at(y) = -1;                                                            
+    	//       if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
+    	// 	check[1] = true;
+    	// 	threshold_area.at(x).at(y) = 1;
+    	// 	ch = 1;
+    	//       }
+    	//       //threshold_area.at(x).at(y) = -1;
+    	//     }
+    	//   }
+    	// }
 	
 	//bottom region to check around candidate
-	for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
-	  for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t - (i_parameter_y_window + i_parameter_y_buffer); y++){
+        check[2] = bottom_box.Check_Track(threshold_area);
+        if (check[2])
+          ch = true;
 
-    	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-    	      //threshold_area.at(x).at(y) = -1;                                                            
-    	      if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
-    		check[2] = true;
-    		threshold_area.at(x).at(y) = 1;
-    		ch = 1;
-    	      }
-    	      //threshold_area.at(x).at(y) = -1;
-    	    }
-    	  }
-    	}
+
+	// for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
+	//   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t - (i_parameter_y_window + i_parameter_y_buffer); y++){
+
+    	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+    	//       //threshold_area.at(x).at(y) = -1;                                                            
+    	//       if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
+    	// 	check[2] = true;
+    	// 	threshold_area.at(x).at(y) = 1;
+    	// 	ch = 1;
+    	//       }
+    	//       //threshold_area.at(x).at(y) = -1;
+    	//     }
+    	//   }
+    	// }
 	
 	//right region to check around candidate
-	for (int x = s + (i_parameter_x_window + i_parameter_x_buffer); 
-             x <= s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); x++){
-	  for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); 
-               y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+        check[3] = right_box.Check_Track(threshold_area);
+        if (check[3])
+          ch = true;
 
-    	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-    	      //threshold_area.at(x).at(y) = -1;                                                            
-    	      if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
-    		check[3] = true;
-    		threshold_area.at(x).at(y) = 1;
-    		ch = 1;
-    	      }
-    	    }
-    	  }		  
-    	}
+
+	// for (int x = s + (i_parameter_x_window + i_parameter_x_buffer); 
+        //      x <= s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); x++){
+	//   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); 
+        //        y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+
+    	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+    	//       //threshold_area.at(x).at(y) = -1;                                                            
+    	//       if (nfrw.adc_value.at(x).at(y) > f_parameter_threshold && track_exclusion_map[x][y] != 1){
+    	// 	check[3] = true;
+    	// 	threshold_area.at(x).at(y) = 1;
+    	// 	ch = 1;
+    	//       }
+    	//     }
+    	//   }		  
+    	// }
 
     	//rudimentary direction detection/constructing veto bubble
     	if (ch == 1){
@@ -481,115 +572,181 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	t = dumt;
       }
 
+      if (track_exclusion_map[temps][tempt] != 0) {c_info[8] = 1;} // flag if candidate is in track region
+
+
+      //left box
+      rad_analysis::Subarea left_box(s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
+                                     t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+                                     s - (i_parameter_x_window + i_parameter_x_buffer),
+                                     t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+	
+      //top box
+      rad_analysis::Subarea top_box(s - (i_parameter_x_window + i_parameter_x_buffer),
+                                    t + (i_parameter_y_window + i_parameter_y_buffer),
+                                    s + (i_parameter_x_window + i_parameter_x_buffer),
+                                    t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+	
+      //bottom box
+      rad_analysis::Subarea bottom_box(s - (i_parameter_x_window + i_parameter_x_buffer),
+                                       t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+                                       s + (i_parameter_x_window + i_parameter_x_buffer),
+                                       t - (i_parameter_y_window + i_parameter_y_buffer) );
+	
+      //right box
+      rad_analysis::Subarea right_box(s + (i_parameter_x_window + i_parameter_x_buffer),
+                                      t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+                                      s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
+                                      t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
       
       //left region to check around candidate
-      for (int x = s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); x <= s - (i_parameter_x_window + i_parameter_x_buffer); x++){
-	for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
-	  
-	  if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-	    if (threshold_area.at(x).at(y) != 0){
-	      threshold_area.at(temps).at(tempt) = -1;
-	      check[0] = false;
-	    }
-	    
-	    if (track_exclusion_map.at(x).at(y) != 0)
-	      c_info[8] = 1; 
-	  }
+      check[0] = left_box.Check(threshold_area);
+      if (!check[0])
+        threshold_area[temps][tempt] = -1;
 
-	  else
-	    check[0] = false;
-	}
-      }
+      // for (int x = s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); x <= s - (i_parameter_x_window + i_parameter_x_buffer); x++){
+      //   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+	  
+      //     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+      //       if (threshold_area.at(x).at(y) != 0){
+      //         threshold_area.at(temps).at(tempt) = -1;
+      //         check[0] = false;
+      //       }
+	    
+      //       if (track_exclusion_map.at(x).at(y) != 0)
+      //         c_info[8] = 1; 
+      //     }
+
+      //     else
+      //       check[0] = false;
+      //   }
+      // }
       
       //top region to check around candidate
-      for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
-	for (int y = t + (i_parameter_y_window + i_parameter_y_buffer); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
-	  
-	  if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-	    if (threshold_area.at(x).at(y) != 0){
-	      threshold_area.at(temps).at(tempt) = -1;
-	      check[0] = false;
-	    }
-	    
-	    if (track_exclusion_map.at(x).at(y) != 0) // If this candidate is in a track exclusion zone,
-	      c_info[8] = 1;                          // flag it, but still record everything; it can be cut from the ttree.
-	  }
+      check[0] = top_box.Check(threshold_area);
+      if (!check[0])
+        threshold_area[temps][tempt] = -1;
 
-	  else
-	    check[0] = false;
-	}
-      }
+      // for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
+      //   for (int y = t + (i_parameter_y_window + i_parameter_y_buffer); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+	  
+      //     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+      //       if (threshold_area.at(x).at(y) != 0){
+      //         threshold_area.at(temps).at(tempt) = -1;
+      //         check[0] = false;
+      //       }
+	    
+      //       if (track_exclusion_map.at(x).at(y) != 0) // If this candidate is in a track exclusion zone,
+      //         c_info[8] = 1;                          // flag it, but still record everything; it can be cut from the ttree.
+      //     }
+
+      //     else
+      //       check[0] = false;
+      //   }
+      // }
       
       //bottom region to check around candidate
-      for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
-	for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t - (i_parameter_y_window + i_parameter_y_buffer); y++){
-	  
-	  if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-	    if (threshold_area.at(x).at(y) != 0){
-	      threshold_area.at(temps).at(tempt) = -1;
-	      check[0] = false;
-	    }
-            
-            if (track_exclusion_map.at(x).at(y) != 0) 
-	      c_info[8] = 1;                          
-	  }
+      check[0] = bottom_box.Check(threshold_area);
+      if (!check[0])
+        threshold_area[temps][tempt] = -1;
 
-	  else
-	    check[0] = false;
-	}
-      }
+      // for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
+      //   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t - (i_parameter_y_window + i_parameter_y_buffer); y++){
+	  
+      //     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+      //       if (threshold_area.at(x).at(y) != 0){
+      //         threshold_area.at(temps).at(tempt) = -1;
+      //         check[0] = false;
+      //       }
+            
+      //       if (track_exclusion_map.at(x).at(y) != 0) 
+      //         c_info[8] = 1;                          
+      //     }
+
+      //     else
+      //       check[0] = false;
+      //   }
+      // }
       
       //right region to check around candidate
-      for (int x = s + (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); x++){
-	for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+      check[0] = right_box.Check(threshold_area);
+      if (!check[0])
+        threshold_area[temps][tempt] = -1;
 
-	  if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
-	    if (threshold_area.at(x).at(y) != 0){
-	      threshold_area.at(temps).at(tempt) = -1;
-	      check[0] = false;
-	    }
+      // for (int x = s + (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width - 1); x++){
+      //   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+
+      //     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
+      //       if (threshold_area.at(x).at(y) != 0){
+      //         threshold_area.at(temps).at(tempt) = -1;
+      //         check[0] = false;
+      //       }
 	    
-	    if (track_exclusion_map.at(x).at(y) != 0)
-	      c_info[8] = 1; 
-	  }	  
+      //       if (track_exclusion_map.at(x).at(y) != 0)
+      //         c_info[8] = 1; 
+      //     }
 
-	  else
-	    check[0] = false;
-	}		  
-      }
+      //     else
+      //       check[0] = false;
+      //   }		  
+      // }
       
       if (check[0] == true){
 	//left box
-	for (int x = s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width); x <= s - (i_parameter_x_window + i_parameter_x_buffer); x++){
-	  for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
-	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
-	      threshold_area.at(x).at(y) = -1;
-	  }
-	}
+        left_box.Draw_Subarea(threshold_area, -1);
+
+        // rad_analysis::Subarea left_box(s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
+        //                                t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+        //                                s - (i_parameter_x_window + i_parameter_x_buffer),
+        //                                t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+	// for (int x = s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width); x <= s - (i_parameter_x_window + i_parameter_x_buffer); x++){
+	//   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
+	//       threshold_area.at(x).at(y) = -1;
+	//   }
+	// }
 	
 	//top box
-	for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
-	  for (int y = t + (i_parameter_y_window + i_parameter_y_buffer); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
-	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
-	      threshold_area.at(x).at(y) = -1;
-	  }
-	}
+        top_box.Draw_Subarea(threshold_area, -1);
+
+        // rad_analysis::Subarea top_box(s - (i_parameter_x_window + i_parameter_x_buffer),
+        //                               t + (i_parameter_y_window + i_parameter_y_buffer),
+        //                               s + (i_parameter_x_window + i_parameter_x_buffer),
+        //                               t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+	// for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
+	//   for (int y = t + (i_parameter_y_window + i_parameter_y_buffer); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
+	//       threshold_area.at(x).at(y) = -1;
+	//   }
+	// }
 	
 	//bottom box
-	for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
-	  for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t - (i_parameter_y_window + i_parameter_y_buffer); y++){
-	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
-	      threshold_area.at(x).at(y) = -1;
-	  }
-	}
+        bottom_box.Draw_Subarea(threshold_area, -1);
+
+        // rad_analysis::Subarea bottom_box(s - (i_parameter_x_window + i_parameter_x_buffer),
+        //                                  t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+        //                                  s + (i_parameter_x_window + i_parameter_x_buffer),
+        //                                  t - (i_parameter_y_window + i_parameter_y_buffer) );
+        // for (int x = s - (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer); x++){
+	//   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t - (i_parameter_y_window + i_parameter_y_buffer); y++){
+	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
+	//       threshold_area.at(x).at(y) = -1;
+	//   }
+	// }
 	
 	//right box
-	for (int x = s + (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width); x++){
-	  for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
-	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
-	      threshold_area.at(x).at(y) = -1;
-	  }
-	}
+        right_box.Draw_Subarea(threshold_area, -1);
+
+        // rad_analysis::Subarea right_box(s + (i_parameter_x_window + i_parameter_x_buffer),
+        //                                 t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
+        //                                 s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
+        //                                 t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
+        // for (int x = s + (i_parameter_x_window + i_parameter_x_buffer); x <= s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width); x++){
+	//   for (int y = t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y <= t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width); y++){
+	//     if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0)
+	//       threshold_area.at(x).at(y) = -1;
+	//   }
+	// }
 
 	//fill an std::vector of the final coordinates to real candidates
 	fcoor.push_back(s);
