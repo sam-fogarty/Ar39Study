@@ -83,13 +83,10 @@ int main(int argc, char* argv[]) {
   
   bool nfilter;
 
-
   string detector;
   string intag;
 
-
   rad_analysis::Waveforms nfrw;
-
 
   vector<double> Par(12);
 
@@ -102,10 +99,8 @@ int main(int argc, char* argv[]) {
   
   pfile.close();
 
-
   InputTag product_tag  { intag };
 
-  
   cout << "Detector: " << detector << endl;
 
   //Set parameters for the detector
@@ -152,9 +147,7 @@ int main(int argc, char* argv[]) {
 
   vector<string> filenames;
 
-
   nfrw.Fill_Wire_Maps();
-
 
   ifstream myfile;
 
@@ -282,7 +275,6 @@ int main(int argc, char* argv[]) {
 
   srand(time(NULL));
 
-
   //cout << "Seems to be working..." << endl; //debug all above this
 
   //start looping through data files and events
@@ -292,7 +284,6 @@ int main(int argc, char* argv[]) {
     cind = 0;
     double dcounter = 0;    //counts dead channels (also gets divided into percent of detector area)
     int counter = 0;        //used in the track exclusion algorithm
-
 
     thisRunNum = ev.eventAuxiliary().run();
     thisSubrunNum = ev.eventAuxiliary().subRun();
@@ -429,7 +420,7 @@ int main(int argc, char* argv[]) {
 
     
     cout << "try rad_analysis::Signal_Select()" << endl;
-    temp = rad_analysis::Signal_Select(nfrw, ICharge, Par, IntWindow, c_info, TEinfo, ctree, cind, ev);
+    temp = rad_analysis::Signal_Select(nfrw, ICharge, Par, IntWindow, c_info, TEinfo, ctree, cind);
 
 
     cout << "rad_analysis::Signal_Select() ended; fill the things with the stuff." << endl;

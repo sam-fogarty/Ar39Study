@@ -68,8 +68,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
                                                              std::vector<double>& c_info,
                                                              std::vector<float>& TEinfo,
                                                              TTree& ctree,
-                                                             int& cind,
-                                                             const gallery::Event& ev){
+                                                             int& cind){
 
   std::cout << "Signal_Select called" << std::endl;
 
