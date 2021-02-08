@@ -26,14 +26,14 @@ double bline(double x1, double y1, double x2, double y2, double x);
 namespace rad_analysis{
 
   // Struct of a rectangle of the threshold or track data
-  struct Subarea { 
+  class Subarea { 
+   private:
     short wire1; 
     short wire2;
     short time1;
     short time2;
 
-    bool track_here = false;
-
+   public:
     Subarea(short w1, short t1, short w2, short t2);
 
     // function to draw the subarea (a rectangle) from bottom left to top right
