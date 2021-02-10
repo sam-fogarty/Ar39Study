@@ -35,7 +35,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
   plane_wire_intersections = std::vector< std::vector<short> >(detector_properties.CHN, std::vector<short>(5, 0)); 
   sd_vector = std::vector<float>(detector_properties.CHN, 0);
   baseline = std::vector<float>(detector_properties.CHN, 0);
-  track_channel = std::vector<bool>(detector_properties.CHN, 1); // all set to 1 for now (essentially allows track exclusion to look everywhere) -- this can be refined
+  track_channel = std::vector<bool>(detector_properties.CHN, 1); // all set to 1 for now (essentially allows track exclusion to look everywhere)
   dead_channel = std::vector<bool>(detector_properties.CHN, 0);
 
   std::cout << "(1) reading geometry" << std::endl; // one of many debugging messages

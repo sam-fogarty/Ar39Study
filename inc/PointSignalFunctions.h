@@ -48,12 +48,12 @@ namespace rad_analysis{
   // Select point-like signal and record their waveforms
   std::vector< std::vector<char> > Signal_Select(rad_analysis::Waveforms& nfrw,
                                                  std::vector<float>& ICharge,
-                                                 std::vector<double>& Par,
+                                                 const std::vector<double>& Par,
                                                  std::vector<int>& IntWindow,
                                                  std::vector<double>& c_info,
                                                  std::vector<float>& TEinfo,
                                                  TTree& ctree,
-                                                 int& cind);
+                                                 int& i_candidate_index);
 
   // Confirm candidates based on 3D info on multiple planes; needs improvement; MicroBooNE only
   void Confirm_Candidates(std::vector<short>& fcoor, rad_analysis::Waveforms& nfrw);
