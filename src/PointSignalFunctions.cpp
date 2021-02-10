@@ -50,15 +50,15 @@ bool rad_analysis::Subarea::Check(const std::vector< std::vector<char> >& t_data
       if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
 
         if (t_data[s][t] != 0)
-          return false;
+          return true;
 
       }
       
-      else return false;
+      else return true;
     }
   }
 
-  return true;
+  return false;
 }
 
 std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Waveforms& nfrw,
@@ -521,25 +521,15 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
                                       s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
                                       t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
       
-      //left region to check around candidate
-      check[0] = left_box.Check(threshold_area);
-      if (!check[0])
+      // check these regions for overlapping signals
+      if (left_box.Check(threshold_area)  ||
+          right_box.Check(threshold_area) ||
+          top_box.Check(threshold_area)   ||
+          bottom_box.Check(threshold_area)){
+        
         threshold_area[temps][tempt] = -1;
-      
-      //top region to check around candidate
-      check[0] = top_box.Check(threshold_area);
-      if (!check[0])
-        threshold_area[temps][tempt] = -1;
-      
-      //bottom region to check around candidate
-      check[0] = bottom_box.Check(threshold_area);
-      if (!check[0])
-        threshold_area[temps][tempt] = -1;
-      
-      //right region to check around candidate
-      check[0] = right_box.Check(threshold_area);
-      if (!check[0])
-        threshold_area[temps][tempt] = -1;
+        check[0] = false;
+      }
       
       if (check[0] == true){
 	//left box
