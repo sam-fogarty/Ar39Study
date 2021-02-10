@@ -48,7 +48,7 @@ namespace rad_analysis{
   // Select point-like signal and record their waveforms
   std::vector< std::vector<char> > Signal_Select(rad_analysis::Waveforms& nfrw,
                                                  std::vector<float>& ICharge,
-                                                 std::vector<double>& Par,
+                                                 const std::vector<double>& Par,
                                                  std::vector<int>& IntWindow,
                                                  std::vector<double>& c_info,
                                                  std::vector<float>& TEinfo,

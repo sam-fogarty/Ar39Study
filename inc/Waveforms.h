@@ -21,8 +21,8 @@ namespace rad_analysis {
 
   struct Data_P {         // This struct keeps the data properties -- all set in parameter file
     unsigned short MCCX;  // MCC number because each MCC uses different data products
-    bool recoused;        // Is this data reconstructed or raw?
-    bool simulated;       // Is this data simulated?
+    bool recoused=false;  // Is this data reconstructed or raw?
+    bool simulated=false; // Is this data simulated?
     float SCALE;          // This must be used for a rounding bug in fourier space 
   };                      //  noise-filtered raw data products (ADC = 12 bit integer, but
                           //  fourier transform outputs a real number, so rounds to ADC
@@ -70,7 +70,7 @@ namespace rad_analysis {
 
     std::vector< std::vector<double> > candidate_info; // 39Ar candidate info stored here so that it can be easily passed around (total energy etc...)
 
-    float f_reco_scale; // converts ADC threshold to reco units
+    float f_reco_scale = 1.0; // converts ADC threshold to reco units
 
     // Fill std::vectors as maps 
     // Assumes the detector_properties and data_properties are already filled!  

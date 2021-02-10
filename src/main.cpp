@@ -55,9 +55,7 @@
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
 //#include "larevt/Filters/ChannelFilter.h"
 
-
 #define PI 3.141592
-
 
 using namespace art;
 using namespace std;
@@ -129,6 +127,7 @@ int main(int argc, char* argv[]) {
   InputTag product_tag  { intag };
 
   cout << "Detector: " << detector << endl;
+  // cout << "Threshold: " << parameter_list[3] << " ADCs" << endl;
 
   //Set parameters for the detector
   if (detector == "MicroBooNE"){
@@ -260,9 +259,6 @@ int main(int argc, char* argv[]) {
     filenames.push_back(argv[1]);
   }
 
-
-  srand(time(NULL));
-
   //cout << "Seems to be working..." << endl; //debug all above this
 
 
@@ -380,7 +376,7 @@ int main(int argc, char* argv[]) {
       vector<int>().swap(badchan);                    //clear badchan after use
     }
 
-    parameter_list[3] /= nfrw.f_reco_scale; //changes the scale of the threshold from adcs to the reconstructed units
+    if (nfrw.f_reco_scale != 1.0) {parameter_list[3] /= nfrw.f_reco_scale;} //changes the scale of the threshold from adcs to the reconstructed units
  
     // // debug 
     // // if (!nfrw.data_properties.recoused){	     
@@ -426,6 +422,7 @@ int main(int argc, char* argv[]) {
 	for (unsigned short s = 0; s < nfrw.collection_channel[p].size(); s++){
 	  for(unsigned short t = 0; t < nfrw.detector_properties.NTT; t++){
 	    DetectionMap->Fill(nfrw.collection_channel[p][s], t, static_cast<int>(temp_data.at(nfrw.collection_channel[p][s]).at(t)));
+            // DetectionMap->Fill(nfrw.collection_channel[p][s], t, static_cast<int>(nfrw.adc_value.at(nfrw.collection_channel[p][s]).at(t)));
 	  }
 	}
       }      
@@ -456,7 +453,7 @@ int main(int argc, char* argv[]) {
       	    f = (p) * nfrw.detector_properties.NCW/12 + s;
 
       	    DetectionMap->Fill(f, t, static_cast<int>(temp_data.at(nfrw.collection_channel[p][s]).at(t)));
-	    
+            // DetectionMap->Fill(f, t, static_cast<int>(nfrw.adc_value.at(nfrw.collection_channel[p][s]).at(t)));	    
 
     	    ////inner planes
     	    if (p == 1)

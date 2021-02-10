@@ -63,7 +63,7 @@ bool rad_analysis::Subarea::Check(const std::vector< std::vector<char> >& t_data
 
 std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Waveforms& nfrw,
                                                              std::vector<float>& ICharge,
-                                                             std::vector<double>& Par,
+                                                             const std::vector<double>& Par,
                                                              std::vector<int>& IntWindow,
                                                              std::vector<double>& c_info,
                                                              std::vector<float>& TEinfo,
@@ -85,14 +85,14 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
   //std::vector< std::vector<float> > adc_value (nfrw.detector_properties.CHN, std::vector<float>(nfrw.detector_properties.NTT, 0)); //actual std::vector of waveforms for event
 
   // Parameter variables from parameter file (Par is read and filled in main() )
-  float f_parameter_threshold   = Par[3];  // threshold for radiological candidates
-  bool  b_parameter_noise_study = Par[1];  // 0 is operating normally; 1 randomly selects points in the detector to sample noise
-  int   i_parameter_x_window    = Par[5];  // horizontal width parameter for the actual integration window
-  int   i_parameter_y_window    = Par[6];  // vertical width parameter for the integration window 
-  int   i_parameter_x_buffer    = Par[7];  // buffer between integration window and track check boxes
-  int   i_parameter_y_buffer    = Par[8]; 
-  int   i_parameter_x_width     = Par[9];  // width of the track check boxes
-  int   i_parameter_y_width     = Par[10];
+  double f_parameter_threshold   = Par[3];  // threshold for radiological candidates
+  bool   b_parameter_noise_study = Par[1];  // 0 is operating normally; 1 randomly selects points in the detector to sample noise
+  int    i_parameter_x_window    = Par[5];  // horizontal width parameter for the actual integration window
+  int    i_parameter_y_window    = Par[6];  // vertical width parameter for the integration window 
+  int    i_parameter_x_buffer    = Par[7];  // buffer between integration window and track check boxes
+  int    i_parameter_y_buffer    = Par[8]; 
+  int    i_parameter_x_width     = Par[9];  // width of the track check boxes
+  int    i_parameter_y_width     = Par[10];
 
   unsigned short j = 0;
   unsigned short k = 0;
@@ -102,7 +102,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
   srand(time(NULL));
   
-  std::cout << "test 1" << std::endl;
+  std::cout << "Threshold: " << f_parameter_threshold << " ADCs" << std::endl;
 
   //blank out the edges of each plane so that there isn't accidental integration across two planes
   for (unsigned short a = 0; a < nfrw.collection_channel.size(); a++){ //assumes nfrw.collection_channel and iwx are all the same size
@@ -538,7 +538,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       
       //right region to check around candidate
       check[0] = right_box.Check(threshold_area);
-
       if (!check[0])
         threshold_area[temps][tempt] = -1;
       
@@ -756,7 +755,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     std::cout << "finished sideband about to be done" << std::endl;
   }
 
-  //return adc_value;
   return threshold_area;
   // return track_exclusion_map;
 }
