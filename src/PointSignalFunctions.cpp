@@ -22,9 +22,7 @@ rad_analysis::Subarea::Subarea(short a, short b, short c, short d) // Subarea co
 void rad_analysis::Subarea::Draw_Subarea(std::vector< std::vector<char> >& t_data, char val){
   for (int s = wire1; s <= wire2; s++){
     for (int t = time1; t <= time2; t++){
-      if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
-        t_data[s][t] = val;
-      }
+      t_data[s][t] = val;
     }
   }
 }
@@ -32,12 +30,8 @@ void rad_analysis::Subarea::Draw_Subarea(std::vector< std::vector<char> >& t_dat
 bool rad_analysis::Subarea::Check_Track(const std::vector< std::vector<char> >& t_data){
   for (int s = wire1; s <= wire2; s++){
     for (int t = time1; t <= time2; t++){
-      if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
-
-        if (t_data[s][t] == 1) 
-          return true;
-
-      }
+      if (t_data[s][t] == 1) 
+        return true;
     }
   }
 
@@ -47,14 +41,8 @@ bool rad_analysis::Subarea::Check_Track(const std::vector< std::vector<char> >& 
 bool rad_analysis::Subarea::Check(const std::vector< std::vector<char> >& t_data){
   for (int s = wire1; s <= wire2; s++){
     for (int t = time1; t <= time2; t++){
-      if (s < (int)t_data.size() && s >= 0 && t < (int)t_data[s].size() && t >= 0){      
-
-        if (t_data[s][t] != 0)
-          return true;
-
-      }
-      
-      else return true;
+      if (t_data[s][t] != 0)
+        return true;
     }
   }
 
@@ -94,6 +82,11 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
   int    i_parameter_x_width     = Par[9];  // width of the track check boxes
   int    i_parameter_y_width     = Par[10];
 
+  int wire_min = i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width;
+  int wire_max = nfrw.detector_properties.CHN - wire_min;
+  int time_min = i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width;
+  int time_max = nfrw.detector_properties.NTT - time_min;
+
   unsigned short j = 0;
   unsigned short k = 0;
   unsigned short l = 0;
@@ -130,11 +123,11 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
   // std::cout << "test 2" << std::endl;
 
-  for (unsigned short s = 0; s < nfrw.adc_value.size(); s++){
+  for (unsigned short s = wire_min; s < wire_max; s++){
     if (nfrw.detector_properties.DET != 1 && nfrw.channel_to_wire[s][2] != 2){ //select induction planes
     //if (nfrw.channel_to_wire[s][2] == 0){ //select only U plane
       if (!nfrw.data_properties.recoused){
-	for (unsigned short t = 0; t < nfrw.adc_value[s].size() - dt; t++){
+	for (unsigned short t = time_min; t < time_max - dt; t++){
 	  //if ((nfrw.adc_value[s][t] - nfrw.adc_value[s][t + dt]) > f_parameter_threshold * (4.0/3.0)){
 	  if ((nfrw.adc_value[s][t] - nfrw.adc_value[s][t + dt]) > f_parameter_threshold){
 	    if (b_parameter_noise_study != 1 && nfrw.adc_value[s][t + dt] < 0){
@@ -150,7 +143,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       }
 
       else if (nfrw.data_properties.recoused){
-	for (unsigned short t = 0; t < nfrw.adc_value[s].size() - dt; t++){
+	for (unsigned short t = time_min; t < time_max - dt; t++){
 	  //if ((nfrw.adc_value[s][t] - nfrw.adc_value[s][t + dt]) > f_parameter_threshold * (4.0/3.0)){
 
 	  if (nfrw.adc_value[s][t] > f_parameter_threshold){
@@ -166,7 +159,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     }
 
     if (nfrw.channel_to_wire[s][2] == 2){ //select collection planes
-      for (unsigned short t = 0; t < nfrw.adc_value[s].size(); t++){
+      for (unsigned short t = time_min; t < time_max; t++){
 	if (abs(nfrw.adc_value[s][t]) > f_parameter_threshold){
 	  threshold_area[s][t] = 1;
 
