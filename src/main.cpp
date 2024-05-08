@@ -164,11 +164,20 @@ int main(int argc, char* argv[]) {
 
   else if (detector == "ProtoDUNE"){
     nfrw.detector_properties.DET = 1;
-    nfrw.detector_properties.CHN = 15360;
-    nfrw.detector_properties.NCW = 5760;
-    nfrw.detector_properties.NTT = 6000;
+    nfrw.detector_properties.CHN = 15360; // total channels
+    nfrw.detector_properties.NCW = 5760; // 2*480 ch * 6 APAs collection plane wires. 2*800*6 for induction
+    nfrw.detector_properties.NTT = 6000; // time ticks to look at. Is this the total?
     nfrw.detector_properties.ntpcs = 12;
     b_noise_filter = 1;
+  }
+  else if (detector == "ProtoDUNE-HD"){
+    nfrw.detector_properties.DET = 2;
+    nfrw.detector_properties.CHN = 10240; // total channels
+    nfrw.detector_properties.NCW = 3840; // 2*480 ch * 4 APAs collection plane wires. 2*800*4 for induction
+    nfrw.detector_properties.NTT = 6000; // time ticks to look at. Is this the total?
+    nfrw.detector_properties.ntpcs = 8; // 4 real TPCs corresponding to the 4 drift volumes, 4 "dummy" TPCs
+    b_noise_filter = 1;
+    // 0.512 microseconds per tick; 1.953125 MHz sampling rate
   }
 
   // now that the detector settings are set, fill the wire maps
