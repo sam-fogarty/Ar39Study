@@ -21,6 +21,8 @@
 #include <fstream>
 #include <numeric>
 
+#include <boost/lexical_cast.hpp>
+
 //some ROOT includes
 #include "TInterpreter.h"
 //#include "TString.h"
@@ -72,7 +74,6 @@ bool vcompare(vector<short>& a, vector<short>& b){
 
 
 int main(int argc, char* argv[]) {
-
   // declare important variables
   //------------------------------
 
@@ -179,10 +180,8 @@ int main(int argc, char* argv[]) {
     b_noise_filter = 1;
     // 0.512 microseconds per tick; 1.953125 MHz sampling rate
   }
-
   // now that the detector settings are set, fill the wire maps
   nfrw.Fill_Wire_Maps();
-
   // set TTree branches with vectors to be changed in Signal_Select()
   etree.Branch("tep", &TEinfo[0], "tep/F");
   etree.Branch("total", &TEinfo[1], "total/F");
@@ -219,7 +218,7 @@ int main(int argc, char* argv[]) {
   ctree.Branch("confirmed", &candidate_info[12], "confirmed/D");
   ctree.Branch("y", &candidate_info[13], "y/D");
   ctree.Branch("z", &candidate_info[14], "z/D");
-
+  cout << "Set TTree branches" << endl;
   //// these histograms are for testing and can probably be removed soon
   TH1F *wire8049 = new TH1F("wire8049", "", nfrw.detector_properties.NTT, 0, nfrw.detector_properties.NTT);
   TH1F *ModeHist = new TH1F("ModeHist", "ADC baseline", nfrw.detector_properties.CHN, 0, nfrw.detector_properties.CHN);
@@ -243,7 +242,6 @@ int main(int argc, char* argv[]) {
                            ((double)nfrw.detector_properties.NCW/nfrw.detector_properties.ntpcs)*3, 
                            nfrw.detector_properties.NTT*2, -nfrw.detector_properties.NTT, nfrw.detector_properties.NTT); 
   TH1F *osd = new TH1F("osd","", nfrw.detector_properties.CHN, 0, nfrw.detector_properties.CHN);  
-
   // set some outdated histogram parameters
   EnergyHist->GetXaxis()->SetTitle("keV");
   EnergyHist->GetYaxis()->SetTitle("Number of Detections");
