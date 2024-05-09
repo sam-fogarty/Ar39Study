@@ -92,7 +92,8 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
                                                  //  but it must now account for the possibility of negative ADC values
                                                  //  hence, 2x2^12 possible values
 
-      for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++){
+      for (ULong64_t k = 0; k < static_cast<ULong64_t>(ard_vec.at(i_ar).Samples()); k++){
+      //for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++){
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
 
 	totsqr += ADCval*ADCval; //pow(ADCval,2);
@@ -111,8 +112,8 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
       mean = total/n;               // Used soon to find other statistical values
       baseline.at(chan_num) = i_md; // Baseline = Mode avg of waveform
-
-      for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++) {
+      for (ULong64_t k = 0; k < static_cast<ULong64_t>(ard_vec.at(i_ar).Samples()); k++){
+      //for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++) {
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
 
 	//Exclude outer planes for PDUNE
@@ -210,7 +211,8 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 	int chan_num = ard_vec.at(i_ar).Channel();
 	
 	//find [x] and [x^2]
-	for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++){
+	for (ULong64_t k = 0; k < static_cast<ULong64_t>(ard_vec.at(i_ar).Samples()); k++){
+	//for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++){
 	  float ADCval = (ard_vec.at(i_ar).ADC(k) - ard_vec.at(i_ar).GetPedestal()) / data_properties.SCALE;
 
 	  totsqr += ADCval*ADCval; //pow(ADCval,2);
