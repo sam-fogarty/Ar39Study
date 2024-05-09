@@ -30,7 +30,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
   // Expand our vectors to the size needed
   adc_value = std::vector< std::vector<float> >(detector_properties.CHN, std::vector<float>(detector_properties.NTT, 0)); 
-  m_region_sd = std::vector< std::vector<float> >(detector_properties.CHN, std::vector<float>(120, 0)); 
+  m_region_sd = std::vector< std::vector<float> >(detector_properties.CHN, std::vector<float>(165, 0)); 
   geometry_info = std::vector< std::vector<float> >(detector_properties.CHN, std::vector<float>(9, 0));
   plane_wire_intersections = std::vector< std::vector<short> >(detector_properties.CHN, std::vector<short>(5, 0)); 
   sd_vector = std::vector<float>(detector_properties.CHN, 0);
@@ -112,6 +112,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
       mean = total/n;               // Used soon to find other statistical values
       baseline.at(chan_num) = i_md; // Baseline = Mode avg of waveform
+      //std::cout << "baseline for channel " << chan_num << " = " << i_md << std::endl; 
       for (ULong64_t k = 0; k < static_cast<ULong64_t>(ard_vec.at(i_ar).Samples()); k++){
       //for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++) {
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
@@ -125,6 +126,9 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 	
 	f_sum_square += (ADCval - mean)*(ADCval - mean); //pow(ADCval - mean, 2);
 
+        if (m_i_sd_counter > m_region_sd[chan_num].size()) {
+        	std::cout << "Warning: m_i_sd_counter " << m_i_sd_counter << " is greater than vector size " << m_region_sd[chan_num].size() << std::endl;
+	}
 	m_region_sd[chan_num][m_i_sd_counter] += (ADCval - mean)*(ADCval - mean); //pow(ADCval - mean, 2);
 	if (k != 0 && k % 50 == 0){
 	  m_region_sd[chan_num][m_i_sd_counter] /= 50;
@@ -160,6 +164,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
     //median noise filter
     if (b_noise_filter){ // if noise filter flag (b_noise_filter) is true
+      std::cout << "Using median noise filter" << std::endl;
       for (unsigned char TPC_number = 0; TPC_number < collection_channel.size(); TPC_number++){
 	for (unsigned short wire_index = 0; wire_index < collection_channel[TPC_number].size(); wire_index += 16){
 	  for (int t = 0; t < detector_properties.NTT; t++){ // loop over the whole event
@@ -190,6 +195,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
   } // end if not reco
 
   else if (data_properties.recoused) {
+    std::cout << "data_properties.recoused is True" << std::endl;
     for (size_t i_ar = 0, size_allrawdigits = wire_vec.size(); i_ar != size_allrawdigits; i_ar++) {
       int chan_num = wire_vec.at(i_ar).Channel(); //the channels given by allrawdigits_vec might not be in order
 
@@ -204,6 +210,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
     // Use Rawdigits to find dead channels and scale
     if (data_properties.MCCX == 8){
+      std::cout << "Use Rawdigits to find dead channels and scale" << std::endl;
       for (size_t i_ar = 0, size_allrawdigits = ard_vec.size(); i_ar != size_allrawdigits; ++i_ar) {
 	unsigned short n = 0;
 	float x, x2, total = 0, totsqr = 0, f_sum_square = 0;
@@ -245,6 +252,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
     }
 
     else if (data_properties.MCCX == 9){
+      std::cout << "data_properties.MCCX = 9" << std::endl;
       reco_product_value = std::vector< std::vector<float> >(detector_properties.CHN, std::vector<float>(detector_properties.NTT, 0)); //gauss product std::vector of waveforms for event
       
       if (!data_properties.simulated){
@@ -272,9 +280,10 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
     }
   } // end if reco
-  
-  std::vector< std::vector<float> >().swap(m_region_sd);
-
+  std::cout << "before" << std::endl;  
+  //std::vector< std::vector<float> >().swap(m_region_sd);
+  m_region_sd.clear();
+  std::cout << "after" << std::endl;
   std::cout << "Waveform Initialized" << std::endl;
 }
 
