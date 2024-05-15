@@ -58,7 +58,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
                                                              TTree& ctree,
                                                              int& i_candidate_index){
 
-  std::cout << "Signal_Select called" << std::endl;
 
   // These are used for the asymmetric windowing; these values are hard-coded for now, but we'll want it to depend on the detector/data product
   const short c_center_range[2] = {-16, 12};     // signal center wire
@@ -102,13 +101,13 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     for (unsigned short t = 0; t < nfrw.detector_properties.NTT; t++){
       threshold_area[nfrw.collection_channel[a][0]][t] = -1;
       threshold_area[nfrw.collection_channel[a][nfrw.collection_channel[a].size() - 1]][t] = -1;  // -1 indicates dead or otherwise forbidden
-                                                                                                  // signals too close to these are tossed out
-      if (nfrw.detector_properties.DET != 1){
+                                                                                                 // signals too close to these are tossed out
+      if (nfrw.detector_properties.DET == 0){
 	threshold_area[nfrw.induction_channel_1[a][0]][t] = -1;
 	threshold_area[nfrw.induction_channel_1[a][nfrw.induction_channel_1[a].size() - 1]][t] = -1;
 	threshold_area[nfrw.induction_channel_2[a][0]][t] = -1;
-	threshold_area[nfrw.induction_channel_2[a][nfrw.induction_channel_2[a].size() - 1]][t] = -1;
-      }
+        threshold_area[nfrw.induction_channel_2[a][nfrw.induction_channel_2[a].size() - 1]][t] = -1;
+       }
     }
   }
 
@@ -120,11 +119,10 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       }
     }
   }
-
   // std::cout << "test 2" << std::endl;
-
+  
   for (unsigned short s = wire_min; s < wire_max; s++){
-    if (nfrw.detector_properties.DET != 1 && nfrw.channel_to_wire[s][2] != 2){ //select induction planes
+    if (nfrw.detector_properties.DET == 0 && nfrw.channel_to_wire[s][2] != 2){ //select induction planes
     //if (nfrw.channel_to_wire[s][2] == 0){ //select only U plane
       if (!nfrw.data_properties.recoused){
 	for (unsigned short t = time_min; t < time_max - dt; t++){
@@ -157,7 +155,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	}
       }
     }
-
     if (nfrw.channel_to_wire[s][2] == 2){ //select collection planes
       for (unsigned short t = time_min; t < time_max; t++){
 	if (abs(nfrw.adc_value[s][t]) > f_parameter_threshold){
@@ -251,7 +248,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	}	
       }
 
-      if (nfrw.detector_properties.DET == 1){ //PDUNE-SP Only
+      if (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2){ //PDUNE-SP Only
       	//Stuck Bit Filter First-Pass
       	if (dums > 0 && (unsigned int)dums < threshold_area.size() && dumt > 0 && dumt < nfrw.detector_properties.NTT - 1){
       	  // if (nfrw.adc_value.at(dums).at(dumt) - nfrw.adc_value.at(dums).at(dumt - 1) > nfrw.adc_value.at(dums).at(dumt) / 2.0 || 
@@ -575,7 +572,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     std::cout << "candidates looped through" << std::endl;
     
     //3D position reco
-    if (nfrw.detector_properties.DET != 1){
+    if (nfrw.detector_properties.DET == 0){
       rad_analysis::Confirm_Candidates(fcoor, nfrw);
     }
     
@@ -655,7 +652,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 		stuck_bit = true; // Not actually a stuck bit, but if this is tripped, the candidate is thrown out.
 	      }                   // AKA, after mode adjustment, throw out candidates smaller than threshold
 
-	      if (nfrw.detector_properties.DET == 1) //E-response Sag Fix for PDUNE
+	      if (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2) //E-response Sag Fix for PDUNE
 		IntWindow.push_back(asymmetric * (nfrw.adc_value.at(x).at(y) - lineval));
 
 	      else if (nfrw.detector_properties.DET == 0 && (nfrw.data_properties.MCCX == 8 || !nfrw.data_properties.recoused))
