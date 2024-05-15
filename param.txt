@@ -16,7 +16,7 @@
 12. This is the max events per run.
 13. This is the track exclusion window parameter used to draw bubbles around tracks.
 14. This is the MCCx number. This is important because some data products change.
-15. This is the detector (0 == MicroBooNE; 1 == ProtoDUNE)
+15. This is the detector (0 == MicroBooNE; 1 == ProtoDUNE; 2 == ProtoDUNE-HD)
 16. This is the input data tag to select which product will be analyzed.
 17. This is a scale factor used to solve a rounding bug in some rawdigit products. 
 
