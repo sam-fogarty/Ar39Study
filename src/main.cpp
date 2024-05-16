@@ -254,7 +254,6 @@ int main(int argc, char* argv[]) {
   //"Ar39Study file.txt" overrides the default filelist.txt
   //"Ar39Study num1 num2" will override the event numbers and only look between event num1 and num2
   //"Ar39Study 1 2" will only look at event 1 and event 2
-
   if (argc == 1 || argc == 3){
     myfile.open ("filelist.txt");
     copy(istream_iterator<string>(myfile),istream_iterator<string>(),back_inserter(filenames));
@@ -452,7 +451,7 @@ int main(int argc, char* argv[]) {
     }
 
     //only for pdune right now
-    else if (parameter_list[0] == 1 && nfrw.detector_properties.DET == 1){
+    else if (parameter_list[0] == 1 && (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2)){
       //Doesn't work for Induction Planes
       for (unsigned short p = 0; p < nfrw.collection_channel.size(); p++){
       	for (unsigned short s = 0, f = 0; s < nfrw.collection_channel[p].size(); s++){
