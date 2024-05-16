@@ -64,6 +64,8 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
   //if rawdigits, find baseline, maybe filter noise, and fill waveforms
   if (!data_properties.recoused){ 
     std::cout << "rawdigits selected " << std::endl;
+    //std::ofstream outputFile_1("waveforms_collection.txt");
+    //std::ofstream outputFile_2("waveforms_induction.txt");
 
     for (size_t i_ar = 0, size_allrawdigits = ard_vec.size(); i_ar != size_allrawdigits; i_ar++) { //loop through wires
       bool kcheck = false;
@@ -78,12 +80,11 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 
       m_i_sd_counter = 0;
       i_max = 0;
-
       for (unsigned short t = 0; t < collection_channel.size(); t++){ // Is this a collection wire?
-	if (channel_to_wire[chan_num][2] == 2) 
+	if (channel_to_wire[chan_num][2] == 2)
 	  colw = true;
+	
       }
-
       if (detector_properties.DET == 1 && !colw) //don't fill the induction channels for protodune yet
 	continue;
       else if (detector_properties.DET == 2 && !colw) //don't fill the induction channels for protodune yet
@@ -93,12 +94,17 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
                                                  // For consistency, baseline is re-calculated using this method,
                                                  //  but it must now account for the possibility of negative ADC values
                                                  //  hence, 2x2^12 possible values
-
+      
       for (ULong64_t k = 0; k < static_cast<ULong64_t>(ard_vec.at(i_ar).Samples()); k++){
       //for (int k = 0; k < ard_vec.at(i_ar).Samples(); k++){
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
-
-	totsqr += ADCval*ADCval; //pow(ADCval,2);
+	//if (colw == true){
+        //	outputFile_1 << ADCval << " ";
+        //         }
+        //else {
+        //        outputFile_2 << ADCval << " ";
+        //     }
+        totsqr += ADCval*ADCval; //pow(ADCval,2);
 	total += ADCval;
 	n++;
 
@@ -111,7 +117,10 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 	  }
 	}
       }
-
+      //outputFile_1 << std::endl;
+      //outputFile_2 << std::endl;
+      //outputFile_1 << '\n';
+      //outputFile_2 << '\n';
       mean = total/n;               // Used soon to find other statistical values
       baseline.at(chan_num) = i_md; // Baseline = Mode avg of waveform
       //std::cout << "baseline for channel " << chan_num << " = " << i_md << std::endl; 
@@ -120,10 +129,10 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
 
 	//Exclude outer planes for PDUNE
-	if (detector_properties.DET == 0 || (detector_properties.DET == 1 && !binary_search(outer_tpc.begin(), outer_tpc.end(), TPC_number) )){
+	if (detector_properties.DET == 0 || (detector_properties.DET == 1 && !binary_search(outer_tpc.begin(), outer_tpc.end(), TPC_number) ) || (detector_properties.DET == 2)){
 	  if (k < detector_properties.NTT){
 	    adc_value.at(chan_num).at(k) = (ADCval - baseline[chan_num]); // Waveform = ADC - baseline
-	  }
+	    }
 	}
 	
 	f_sum_square += (ADCval - mean)*(ADCval - mean); //pow(ADCval - mean, 2);
@@ -159,7 +168,8 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 	}
       }
     }
-
+    //outputFile_1.close();
+    //outputFile_2.close();
     std::cout << "baseline done" << std::endl;
 
     // f_reco_scale = 1.0;
