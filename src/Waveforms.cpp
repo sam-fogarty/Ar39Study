@@ -129,7 +129,7 @@ void rad_analysis::Waveforms::initialize_data (const gallery::Event& ev, const s
 	float ADCval = ard_vec.at(i_ar).ADC(k) / data_properties.SCALE;
 
 	//Exclude outer planes for PDUNE
-	if (detector_properties.DET == 0 || (detector_properties.DET == 1 && !binary_search(outer_tpc.begin(), outer_tpc.end(), TPC_number) ) || (detector_properties.DET == 2)){
+	if (detector_properties.DET == 0 || ((detector_properties.DET == 1 || detector_properties.DET == 2) && !binary_search(outer_tpc.begin(), outer_tpc.end(), TPC_number) )){
 	  if (k < detector_properties.NTT){
 	    adc_value.at(chan_num).at(k) = (ADCval - baseline[chan_num]); // Waveform = ADC - baseline
 	    }
