@@ -2,7 +2,20 @@
 
 // #include "Waveforms.h"
 #include <iostream>
+#include <iomanip>  // For std::setw
 
+void showProgress(int current, int total) {
+     ///// progress bar for for loops
+     // current: current index
+     // total: total indices to loop through 
+     if (current % 1000 == 0){
+     	// Calculate the percentage completed
+     	double percentage = (static_cast<double>(current) / total) * 100;
+     	// Print the progress
+     	std::cout << "\rProgress: " << std::setw(3) << static_cast<int>(percentage) << "% ("
+                               << current << "/" << total << ")" << std::flush;
+      	}                         
+   }
 double bline(double x1, double y1, double x2, double y2, double x){
   double m, b;
 
@@ -150,8 +163,9 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	    threshold_area[s][t] = 1;
 	  }
 
-	  if (nfrw.dead_channel[s] == 1)
+	  if (nfrw.dead_channel[s] == 1){
 	    threshold_area[s][t] = -1;
+              }
 	}
       }
     }
@@ -166,8 +180,9 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	  }
 	}
 
-	if (nfrw.dead_channel[s] == 1)
-	  threshold_area[s][t] = -1;
+	if (nfrw.dead_channel[s] == 1){
+          threshold_area[s][t] = -1;
+            }
 
 	// else if (nfrw.adc_value[s][t] < -f_parameter_threshold && b_parameter_noise_study == 1){
 	//   threshold_area[s][t] = -1;
@@ -197,9 +212,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
   }
 
   std::cout << "Initial Coord: " << coord.size() << std::endl;
-
   if (Par[2] == 2){ 
-
     std::cout << "Track exclusion started: " << std::endl;
 
     int dim[4];
@@ -207,7 +220,9 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     bool ch;
     
     //track exclusion continued
+    int coord_size_start = coord.size();
     for (size_t i_coord = 0; i_coord < coord.size(); i_coord += 2){
+      showProgress(i_coord, coord_size_start);
       short s = coord.at(i_coord);
       short t = coord.at(i_coord + 1);
       int dums, dumt, tMax = 0;
@@ -218,8 +233,8 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       }
       
       ch = 0;
-
       //center on max or minimum
+      //std::cout << "i_parameter_x_window loop" << std::endl;
       for (int x = s - i_parameter_x_window; x <= s + i_parameter_x_window; x++){
 	for (int y = t - i_parameter_y_window; y <= t + i_parameter_y_window; y++){
 	  if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){	    
@@ -247,7 +262,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	  }
 	}	
       }
-
+      //std::cout << "stuck bit filter first pass" << std::endl;
       if (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2){ //PDUNE-SP Only
       	//Stuck Bit Filter First-Pass
       	if (dums > 0 && (unsigned int)dums < threshold_area.size() && dumt > 0 && dumt < nfrw.detector_properties.NTT - 1){
@@ -272,7 +287,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       }
 
       if (nfrw.track_channel.at(s) == 1){  //only do this for wires with a muon track (also only collection plane)
-
 	//left box
         rad_analysis::Subarea left_box(s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
                                        t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
@@ -352,9 +366,10 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       }
     }
 
-
+    //std::cout << "Expand the track exclusion map vertically" << std::endl;
     // Expand the track exclusion map vertically
     for (size_t i_coord = 0; i_coord < ecoor.size(); i_coord += 2){
+      //showProgress(i_coord, ecoor.size());
       std::vector<bool> normal_direc(2, false);
 
       short s = ecoor.at(i_coord);
@@ -379,40 +394,38 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
       std::vector<bool>().swap(normal_direc); //clear memory used by normal
     }
-
+    //std::cout << "Expand the track exclusion map horizontally" << std::endl;
     // expand map horizontally
     for (size_t i_coord = 0; i_coord < ecoor.size(); i_coord += 2){
+      //showProgress(i_coord, ecoor.size());
       std::vector<bool> normal_direc(2, false);
-
       short s = ecoor.at(i_coord);
       short t = ecoor.at(i_coord + 1);
       unsigned int test = 0;
-
       if (track_exclusion_map[s + 1][t] == 0 && track_exclusion_map[s - 1][t] != 0){
       	normal_direc[0] = true;
       }
-
       else if (track_exclusion_map[s - 1][t] == 0 && track_exclusion_map[s + 1][t] != 0){
-      	normal_direc[1] = true;
+        normal_direc[1] = true;
       } 
-
       for (short x = -(Par[11] - 10) * normal_direc[1] / 2; x < (Par[11] - 10) * normal_direc[0] / 2; x++){
     	for (short y = -(Par[11] - 10) * 6; y <= (Par[11] - 10) * 6; y++){
-    	  if (x + s < (int)track_exclusion_map.size() && x + s >= 0 && y + t < (int)track_exclusion_map[s].size() && y + t >= 0){
-    	    track_exclusion_map[s + x][t + y] = 1;
+           if (x + s < (int)track_exclusion_map.size() && x + s >= 0 && y + t < (int)track_exclusion_map[s].size() && y + t >= 0){
+              track_exclusion_map[s + x][t + y] = 1;
     	  }
     	}
       }
-
       std::vector<bool>().swap(normal_direc); //clear memory used by normal
     }
 
     std::cout << "Track Exclusion finished. Starting candidate selection from coordinates. " << std::endl;
+   }
     std::cout << "Coordinates found: " << coord.size()/2 << std::endl;
 
+    
     // candidate selection from coordinates 
     for (size_t i_coord = 0; i_coord < coord.size(); i_coord += 2){
-
+      showProgress(i_coord, coord.size());
       bool check[2];
       bool wireWidthCheck = false;
 
@@ -520,7 +533,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
         threshold_area[temps][tempt] = -1;
         check[0] = false;
       }
-      
       if (check[0] == true){
 	//left box
         left_box.Draw_Subarea(threshold_area, -1);
@@ -578,7 +590,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     
     //Confirm_Candidates() will check which fcoor match with each other based on y position
     std::cout << "candidates confirmed by induction plane " << std::endl;
-
+    std::cout << "fcoor.size() = " << fcoor.size() << std::endl;
     for (size_t i_coord = 0; i_coord < fcoor.size(); i_coord += 2){
       unsigned char wire = 0;
 
@@ -680,12 +692,11 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
       // Clear stuck bit candidates
       if (stuck_bit && b_parameter_noise_study != 1) {
-      	sidebandf.clear();
+        sidebandf.clear();
       	sidebandt.clear();
       	IntWindow.clear();	
       	continue;
       }
-      
       ICharge.push_back(accumulate(IntWindow.begin(), IntWindow.end(), 0));
 
       c_info[8] = nfrw.candidate_info[i_coord / 2][8];
@@ -733,7 +744,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     }
 
     std::cout << "finished sideband about to be done" << std::endl;
-  }
+  
 
   return threshold_area;
   // return track_exclusion_map;
