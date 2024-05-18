@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
     nfrw.detector_properties.DET = 2;
     nfrw.detector_properties.CHN = 10240; // total channels
     nfrw.detector_properties.NCW = 3840; // 2*480 ch * 4 APAs collection plane wires. 2*800*4 for induction
-    nfrw.detector_properties.NTT = 6000; // time ticks to look at. Is this the total?
+    nfrw.detector_properties.NTT = 8256; // time ticks to look at. Is this the total?
     nfrw.detector_properties.ntpcs = 8; // 4 real TPCs corresponding to the 4 drift volumes, 4 "dummy" TPCs
     b_noise_filter = 1;
     // 0.512 microseconds per tick; 1.953125 MHz sampling rate
@@ -560,7 +560,6 @@ int main(int argc, char* argv[]) {
 
     //asemble data acquired from rad_analysis::Signal_Select()
     if (parameter_list[2] == 2){
-      
       sort (total_charge.begin(), total_charge.end());
 
       for (size_t i = 0; i < total_charge.size(); i++){
