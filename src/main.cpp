@@ -177,7 +177,15 @@ int main(int argc, char* argv[]) {
     nfrw.detector_properties.NCW = 3840; // 2*480 ch * 4 APAs collection plane wires. 2*800*4 for induction
     nfrw.detector_properties.NTT = 8256; // time ticks to look at. Is this the total?
     nfrw.detector_properties.ntpcs = 8; // 4 real TPCs corresponding to the 4 drift volumes, 4 "dummy" TPCs
+    
+    //set noise filter option and indicate if reco
+    if (intag == "wcNoiseFilter"){
+              b_noise_filter = 0;
+              cout << intag << " selected. Noise filter off." << endl;
+        }
+    else {
     b_noise_filter = 1;
+    }
     // 0.512 microseconds per tick; 1.953125 MHz sampling rate
   }
   // now that the detector settings are set, fill the wire maps
@@ -304,7 +312,6 @@ int main(int argc, char* argv[]) {
 
     if (i_total_event_num > i_max_events) {
       cout << "Event number reached. Closing." << endl;  
-      
       f_output.Write();
       f_output.Close();
       myfile.close();
