@@ -3,7 +3,7 @@
 // #include "Waveforms.h"
 #include <iostream>
 #include <iomanip>  // For std::setw
-
+#include <fstream>
 void showProgress(int current, int total) {
      ///// progress bar for for loops
      // current: current index
@@ -79,7 +79,10 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
   std::vector<short> coord;  //coordinates to points over threshold
   std::vector<short> fcoor;  //coordinates to points over threshold
   std::vector<short> ecoor;  //coordinates of the initial edges of track veto
-
+  int count_hits = 0;
+  int count_wires_with_hits = 0;
+  int save_limit = 100;
+  std::ofstream outputFile("waveforms.txt");
   std::vector< std::vector<char> > threshold_area (nfrw.detector_properties.CHN, std::vector<char>(nfrw.detector_properties.NTT, 0));      //map of points over threshold and dead channels
   std::vector< std::vector<char> > track_exclusion_map (nfrw.detector_properties.CHN, std::vector<char>(nfrw.detector_properties.NTT,0));  //map of excluded area due to muon track
   //std::vector< std::vector<float> > adc_value (nfrw.detector_properties.CHN, std::vector<float>(nfrw.detector_properties.NTT, 0)); //actual std::vector of waveforms for event
@@ -104,7 +107,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
   unsigned short l = 0;
 
   unsigned short dt = 7;
-
+  
   srand(time(NULL));
   
   std::cout << "Threshold: " << f_parameter_threshold << " ADCs" << std::endl;
@@ -133,7 +136,8 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     }
   }
   // std::cout << "test 2" << std::endl;
-  
+  int total_dead_channels = accumulate(nfrw.dead_channel.begin(), nfrw.dead_channel.end(), 0);
+  std::cout << "total dead channels = " << total_dead_channels << std::endl; 
   for (unsigned short s = wire_min; s < wire_max; s++){
     if (nfrw.detector_properties.DET == 0 && nfrw.channel_to_wire[s][2] != 2){ //select induction planes
     //if (nfrw.channel_to_wire[s][2] == 0){ //select only U plane
@@ -170,10 +174,11 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       }
     }
     if (nfrw.channel_to_wire[s][2] == 2){ //select collection planes
+      count_hits = 0;
       for (unsigned short t = time_min; t < time_max; t++){
 	if (abs(nfrw.adc_value[s][t]) > f_parameter_threshold){
 	  threshold_area[s][t] = 1;
-
+          count_hits += 1;
 	  if (b_parameter_noise_study != 1 && nfrw.adc_value[s][t] > 0){
 	    coord.push_back(s);
 	    coord.push_back(t);
@@ -190,7 +195,17 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	// else if (nfrw.adc_value[s][t] < -20)
 	// 	threshold_area[s][t] = -1;
       }
-
+      
+      //if (count_hits > 0 and s > 2560 and count_wires_with_hits < save_limit){
+      //          count_wires_with_hits += 1;
+      //      	for (unsigned short t = time_min; t < time_max; t++){
+      //      		outputFile << nfrw.adc_value[s][t] << " ";     
+      //          }
+      //          outputFile << std::endl;
+      //if (count_wires_with_hits == save_limit-1)  {
+      //          outputFile.close();
+      //     }   
+      //}
       //if enabled, select random coordinates (noise study, collection plane only)
       if (b_parameter_noise_study == 1 && l < 1000){
 	if (j < 1000 / nfrw.collection_channel.size()){
@@ -210,6 +225,21 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       l++;
     }
   }
+  
+  //std::ofstream outputFile("threshold_area.txt");
+  //for (const auto& row : threshold_area) {
+  //     for (size_t j = 0; j < row.size(); ++j) {
+  //           //outputFile << element << ' '; // Separate elements with a space
+  //           outputFile << static_cast<int>(row[j]);
+  //           if (j != row.size() - 1) {
+  //                 outputFile << ' ';
+  //           }
+  //           //outputFile << static_cast<int>(element) << ' ';
+
+  //      }
+  //  outputFile << '\n'; // New line for each row
+  // }
+  //outputFile.close();
 
   std::cout << "Initial Coord: " << coord.size() << std::endl;
   if (Par[2] == 2){ 
@@ -263,7 +293,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	}	
       }
       //std::cout << "stuck bit filter first pass" << std::endl;
-      if (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2){ //PDUNE-SP Only
+      if (nfrw.detector_properties.DET == 1){ //PDUNE-SP Only
       	//Stuck Bit Filter First-Pass
       	if (dums > 0 && (unsigned int)dums < threshold_area.size() && dumt > 0 && dumt < nfrw.detector_properties.NTT - 1){
       	  // if (nfrw.adc_value.at(dums).at(dumt) - nfrw.adc_value.at(dums).at(dumt - 1) > nfrw.adc_value.at(dums).at(dumt) / 2.0 || 
@@ -285,7 +315,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       	  }
       	}
       }
-
       if (nfrw.track_channel.at(s) == 1){  //only do this for wires with a muon track (also only collection plane)
 	//left box
         rad_analysis::Subarea left_box(s - (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
@@ -523,7 +552,6 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
                                       t - (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width),
                                       s + (i_parameter_x_window + i_parameter_x_buffer + i_parameter_x_width),
                                       t + (i_parameter_y_window + i_parameter_y_buffer + i_parameter_y_width) );
-      
       // check these regions for overlapping signals
       if (left_box.Check(threshold_area)  ||
           right_box.Check(threshold_area) ||
@@ -592,6 +620,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
     std::cout << "candidates confirmed by induction plane " << std::endl;
     std::cout << "fcoor.size() = " << fcoor.size() << std::endl;
     for (size_t i_coord = 0; i_coord < fcoor.size(); i_coord += 2){
+      showProgress(i_coord, fcoor.size());
       unsigned char wire = 0;
 
       short range[2];
@@ -612,8 +641,10 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
       //Integrate Charge 
       //if (nfrw.channel_to_wire[s][2] == 2){ //Collection ONLY
+      //std::cout << "integrating" << std::endl;
       if (nfrw.channel_to_wire[s][2] >= 0){ //Integrate on any plane (for reco waveform or just signal shape on induction plane)
-	for (int x = s - i_parameter_x_window; x <= s + i_parameter_x_window; x++){
+	//std::cout << "for loop 1" << std::endl;
+        for (int x = s - i_parameter_x_window; x <= s + i_parameter_x_window; x++){
 	  sf.clear();
 	  st.clear();
 
@@ -628,14 +659,14 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	    range[0] = c_side_range[0];
 	    range[1] = c_side_range[1];
 	  }
-
+          //std::cout << "if statement a" << std::endl;
 	  if (x < (int)threshold_area.size() && x >= 0 && t + range[1] + 25 < (int)threshold_area.at(s).size() && t + range[1] + 25 >= 0){
 	    for (int p = t + range[1] + 1; p <= t + range[1] + 25; p++){
 	      sidebandf.at(sidebandf.size() - 1) += nfrw.adc_value.at(x).at(p);
 	      sf.push_back(nfrw.adc_value.at(x).at(p));
 	    }
 	  }
-
+          //std::cout << "if statement b" << std::endl;
 	  if (x < (int)threshold_area.size() && x >= 0 && t + range[0] - 25 < (int)threshold_area.at(s).size() && t + range[0] - 25 >= 0){
 	    for (int p = t + range[0] - 25; p < t + range[0]; p++){
 	      sidebandt.at(sidebandt.size() - 1) += nfrw.adc_value.at(x).at(p);
@@ -648,7 +679,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 
 	  sidebandf.at(sidebandf.size() - 1) /= 25.0;
 	  sidebandt.at(sidebandt.size() - 1) /= 25.0;
-
+          //std::cout << "for loop 2" << std::endl;
 	  for (int y = t - i_parameter_y_window; y <= t + i_parameter_y_window; y++){
 	    if (x < (int)threshold_area.size() && x >= 0 && y < (int)threshold_area.at(s).size() && y >= 0){
 	      if (y - t >= range[0] && y - t <= range[1]){
@@ -656,29 +687,35 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	      }else{
 		asymmetric = 0;
 	      }
-
+              //std::cout << "bline" << std::endl;
+              
+              //std::cout << "t = " << t << std::endl;
+	      //std::cout << "range[0] = " << range[0] << std::endl;
+              //std::cout << "st[12] = " << st[12] << std::endl;
+              //std::cout << "range[1] = " << range[1] << std::endl;
+              //std::cout << "y = " << y << std::endl;
               // Find adjustment for the mode for sagging waveforms
-	      lineval = bline(t + range[0] - 13, st[12], t + range[1] + 13, sf[12], y); //using median and +/- 25 bins
+	      //lineval = bline(t + range[0] - 13, st[12], t + range[1] + 13, sf[12], y); //using median and +/- 25 bins
+              //std::cout << "stuck bit" << std::endl;
+	      //if (nfrw.adc_value.at(s).at(t) - lineval <= f_parameter_threshold){
+	      //stuck_bit = true; // Not actually a stuck bit, but if this is tripped, the candidate is thrown out.
+	      //}                   // AKA, after mode adjustment, throw out candidates smaller than threshold
+              
+	      //if (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2) //E-response Sag Fix for PDUNE
+	      //IntWindow.push_back(asymmetric * (nfrw.adc_value.at(x).at(y) - lineval));
 
-	      if (nfrw.adc_value.at(s).at(t) - lineval <= f_parameter_threshold){
-		stuck_bit = true; // Not actually a stuck bit, but if this is tripped, the candidate is thrown out.
-	      }                   // AKA, after mode adjustment, throw out candidates smaller than threshold
+	      //else if (nfrw.detector_properties.DET == 0 && (nfrw.data_properties.MCCX == 8 || !nfrw.data_properties.recoused))
+		//IntWindow.push_back(nfrw.adc_value.at(x).at(y));
 
-	      if (nfrw.detector_properties.DET == 1 || nfrw.detector_properties.DET == 2) //E-response Sag Fix for PDUNE
-		IntWindow.push_back(asymmetric * (nfrw.adc_value.at(x).at(y) - lineval));
-
-	      else if (nfrw.detector_properties.DET == 0 && (nfrw.data_properties.MCCX == 8 || !nfrw.data_properties.recoused))
-		IntWindow.push_back(nfrw.adc_value.at(x).at(y));
-
-	      else if (nfrw.detector_properties.DET == 0 && nfrw.data_properties.MCCX == 9 && nfrw.data_properties.recoused){
-		IntWindow.push_back(nfrw.reco_product_value.at(x).at(y));
-	      }
+	      //else if (nfrw.detector_properties.DET == 0 && nfrw.data_properties.MCCX == 9 && nfrw.data_properties.recoused){
+	//	IntWindow.push_back(nfrw.reco_product_value.at(x).at(y));
+	  //    }
 
 	      threshold_area.at(x).at(y) = 1;	    
 
-              
+              //std::cout << "stuck bit second pass" << std::endl; 
               // stuck bit second pass
-	      if (y > t - i_parameter_y_window && y < t + i_parameter_y_window){
+	      if (y > t - i_parameter_y_window && y < t + i_parameter_y_window && nfrw.detector_properties.DET != 2){
 		if (nfrw.adc_value[x][y] - nfrw.adc_value[x][y - 1] > 8 && 
 		    nfrw.adc_value[x][y] - nfrw.adc_value[x][y + 1] > 8){
 		  stuck_bit = true;
@@ -689,7 +726,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
 	  wire++;
 	}
       }
-
+      //std::cout << "clear stuck bit candidates" << std::endl;
       // Clear stuck bit candidates
       if (stuck_bit && b_parameter_noise_study != 1) {
         sidebandf.clear();
@@ -717,7 +754,7 @@ std::vector< std::vector<char> > rad_analysis::Signal_Select(rad_analysis::Wavef
       c_info[9] = nfrw.candidate_info[i_coord / 2][6];
       c_info[10] = nfrw.candidate_info[i_coord / 2][7];
       i_candidate_index++;
-
+      //std::cout << "for loop 3" << std::endl;
       for (unsigned short l = 0; l < nfrw.collection_channel.size(); l++){
       	for (unsigned short p = 0; p < nfrw.collection_channel[l].size(); p++){
 	 
