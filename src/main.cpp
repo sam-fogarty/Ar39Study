@@ -179,8 +179,9 @@ int main(int argc, char* argv[]) {
     nfrw.detector_properties.ntpcs = 8; // 4 real TPCs corresponding to the 4 drift volumes, 4 "dummy" TPCs
     
     //set noise filter option and indicate if reco
-    if (intag == "wcNoiseFilter"){
+    if (intag == "tpcrawdecoder:daq:Reco"){
               b_noise_filter = 0;
+              nfrw.data_properties.recoused = false;
               cout << intag << " selected. Noise filter off." << endl;
         }
     else {
